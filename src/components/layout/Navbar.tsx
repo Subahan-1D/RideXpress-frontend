@@ -92,7 +92,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // 👉 FIX: ডেক্সটপ মেনুর জন্য কঠোরভাবে token চেক
+
   const publicLinks = navigationLinks.filter((l) => l.role === "PUBLIC");
   const privateLinks = token && data?.data?.role
     ? navigationLinks.filter((l) => l.role !== "PUBLIC" && l.role === data.data.role)
