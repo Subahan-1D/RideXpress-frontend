@@ -25,6 +25,8 @@ import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Bike } from "lucide-react";
 import { FaRegUserCircle } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "@/redux/features/authSlice";
 
 export function LoginForm({
   className,
@@ -33,38 +35,8 @@ export function LoginForm({
   const navigate = useNavigate();
   const form = useForm<ILogin>();
   const [login] = useLoginMutation();
-
-  // const onSubmit = async (data: ILogin) => {
-  //   try {
-  //     const res = await login(data).unwrap();
-  //     console.log(res);
-
-  //     if (res.success) {
-  //       toast.success("Logged in successfully");
-  //       navigate("/"); // normal dashboard
-  //     }
-  //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //   } catch (err: any) {
-  //     console.error(err);
-
-  //     // Check the backend message for suspended/blocked users
-  //     const msg = err?.data?.message || "";
-
-  //     if (msg.includes("SUSPENDED") || msg.includes("BLOCKED")) {
-  //       toast.error(`Your account is ${msg.replace("User is ", "")}`);
-  //       return navigate("/account-status", {
-  //         state: { status: msg.replace("User is ", "") },
-  //       });
-  //     }
-
-  //     if (msg === "Password does not match") {
-  //       toast.error("Invalid credential");
-  //     } else if (msg === "User is not verified") {
-  //       toast.error("Your account is not verified");
-  //       navigate("/verify", { state: data.email });
-  //     }
-  //   }
-  // };
+  
+  const dispatch = useDispatch();
 
   const onSubmit = async (data: ILogin) => {
     try {
@@ -72,13 +44,21 @@ export function LoginForm({
       console.log(res);
 
       if (res.success) {
+      
+        dispatch(
+          setCredentials({
+            user: res.data.user,
+            accessToken: res.data.accessToken || "",
+          })
+        );
+
         toast.success("Logged in successfully");
-        navigate("/"); // normal dashboard
+        navigate("/");
       }
     } catch (err: any) {
       console.error(err);
 
-      // Check the backend message for suspended/blocked users
+
       const msg = err?.data?.message || "";
 
       if (msg.includes("SUSPENDED") || msg.includes("BLOCKED")) {
@@ -94,7 +74,6 @@ export function LoginForm({
         toast.error("Your account is not verified");
         navigate("/verify", { state: data.email });
       } else {
-        // ✅ fallback toast for any unhandled error
         toast.error(msg || "Something went wrong. Please try again.");
       }
     }
@@ -192,7 +171,6 @@ export function LoginForm({
 
         <Button
           onClick={() =>
-            // (window.location.href = `${config.baseUrl}/auth/google`)
             (window.location.href = `${config.baseUrl}/auth/google?redirect_uri=${config.frontendUrl}/google-callback`)
           }
           type="button"

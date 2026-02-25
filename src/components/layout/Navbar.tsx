@@ -33,12 +33,13 @@ import {
   useLogoutMutation,
   useUserInfoQuery,
 } from "@/redux/features/auth/auth.api";
-import { useAppDispatch } from "@/redux/hook";
+import { useAppDispatch, useAppSelector } from "@/redux/hook";
+import { logout as clearAuth } from "@/redux/features/authSlice";
 import { role } from "@/constants/role";
 import { LogOut, User, Settings } from "lucide-react";
 import { toast } from "sonner";
 
-// Navigation links array to be used in both desktop and mobile menus
+// Navigation links array
 const navigationLinks = [
   { href: "/", label: "Home", role: "PUBLIC" },
   { href: "/about", label: "About", role: "PUBLIC" },
@@ -54,30 +55,36 @@ const navigationLinks = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const { data } = useUserInfoQuery(undefined);
   const location = useLocation();
   const currentPath = location.pathname;
 
   const [logout] = useLogoutMutation();
   const dispatch = useAppDispatch();
+  const token = useAppSelector((state) => state.auth?.accessToken);
+  
+  const { data } = useUserInfoQuery(undefined, {
+    skip: !token,
+  });
 
   const handleLogout = async () => {
-    await logout(undefined);
-    dispatch(authApi.util.resetApiState());
+    dispatch(clearAuth()); 
+    dispatch(authApi.util.resetApiState()); 
     toast.success("Logged out successfully");
+    try {
+      await logout(undefined).unwrap();
+    } catch (err) {
+      console.log("Backend logout error:", err);
+    }
   };
 
-  // Get user's first character for avatar fallback
   const getUserInitial = (name: string) => {
-    return name.charAt(0).toUpperCase();
+    return name?.charAt(0).toUpperCase() || "U";
   };
 
-  // Check if user has Google profile picture
   const hasGooglePicture = data?.data?.auths?.some(
     (auth) => auth.provider === "google"
   );
 
-  // Sticky + scroll-aware background/shadow
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     onScroll();
@@ -85,10 +92,11 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // 👉 FIX: ডেক্সটপ মেনুর জন্য কঠোরভাবে token চেক
   const publicLinks = navigationLinks.filter((l) => l.role === "PUBLIC");
-  const privateLinks = navigationLinks.filter(
-    (l) => l.role !== "PUBLIC" && l.role === data?.data?.role
-  );
+  const privateLinks = token && data?.data?.role
+    ? navigationLinks.filter((l) => l.role !== "PUBLIC" && l.role === data.data.role)
+    : [];
 
   return (
     <header
@@ -142,7 +150,7 @@ export default function Navbar() {
                   {navigationLinks
                     .filter(
                       (link) =>
-                        link.role === "PUBLIC" || link.role === data?.data?.role
+                        link.role === "PUBLIC" || (!!token && link.role === data?.data?.role)
                     )
                     .map((link) => (
                       <NavigationMenuItem
@@ -172,68 +180,13 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="text-primary hover:text-primary/90">
             <span className="inline-flex items-center gap-2">
-              {/* <Logo /> */}
               <Logo size={50} />
               <span className="hidden sm:inline text-base font-semibold text-foreground">
                 RideExpress
               </span>
             </span>
           </Link>
-
-          {/* Role-based desktop nav (left-aligned) */}
-          {/* {privateLinks.length > 0 ? (
-            <NavigationMenu className="max-md:hidden">
-              <NavigationMenuList className="gap-2">
-                {privateLinks.map((link) => (
-                  <NavigationMenuItem key={`${link.href}-${link.role}`}>
-                    <NavigationMenuLink
-                      asChild
-                      className="py-1.5 font-medium transition-colors"
-                    >
-                      <Link
-                        to={link.href}
-                        className={`relative 
-      ${
-        currentPath === link.href
-          ? "text-foreground font-semibold after:absolute after:left-0 after:bottom-0 after:h-0.5 after:w-full after:bg-primary"
-          : "text-muted-foreground hover:text-primary"
-      }
-    `}
-                      >
-                        {link.label}
-                      </Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
-                ))}
-              </NavigationMenuList>
-            </NavigationMenu>
-          ) : null} */}
         </div>
-        {/* Centered PUBLIC nav on large screens
-        <div className="hidden lg:block absolute left-1/2 -translate-x-1/2">
-          <NavigationMenu>
-            <NavigationMenuList className="gap-4">
-              {publicLinks.map((link) => (
-                <NavigationMenuItem key={link.href}>
-                  <NavigationMenuLink asChild className="py-1.5 font-medium">
-                    <Link
-                      to={link.href}
-                      className={`relative 
-      ${
-        currentPath === link.href
-          ? "text-foreground font-semibold after:absolute after:left-0 after:bottom-0 after:h-0.5 after:w-full after:bg-primary"
-          : "text-muted-foreground hover:text-primary"
-      }
-    `}
-                    >
-                      {link.label}
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
-        </div> */}
 
         {/* Centered nav (public + private links together) */}
         <NavigationMenu className="hidden lg:block">
@@ -271,8 +224,9 @@ export default function Navbar() {
               <ModeToggle />
             </div>
           </div>
-          {/* User Avatar Dropdown or Login Button */}
-          {data?.data?.email ? (
+          
+          {/* Check if TOKEN exists before showing User UI */}
+          {token && data?.data?.email ? (
             <TooltipProvider>
               <DropdownMenu>
                 <Tooltip>
@@ -282,16 +236,6 @@ export default function Navbar() {
                         variant="ghost"
                         className="relative h-10 w-10 rounded-full p-0 hover:bg-accent transition-colors"
                       >
-                        {/* <Avatar className="h-10 w-10">
-                          <AvatarImage
-                            src={data.data.picture || ""}
-                            alt={data.data.name}
-                            className="object-cover"
-                          />
-                          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
-                            {getUserInitial(data.data.name)}
-                          </AvatarFallback>
-                        </Avatar> */}
                         <Avatar className="h-10 w-10">
                           {data?.data?.picture ? (
                             <AvatarImage
@@ -301,7 +245,7 @@ export default function Navbar() {
                             />
                           ) : null}
                           <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
-                            {getUserInitial(data?.data?.name || "U")}
+                            {getUserInitial(data?.data?.name)}
                           </AvatarFallback>
                         </Avatar>
                       </Button>
@@ -318,17 +262,6 @@ export default function Navbar() {
                 >
                   {/* User Info Section */}
                   <div className="flex items-center gap-3 pb-3">
-                    {/* <Avatar className="h-12 w-12">
-                      <AvatarImage
-                        src={data.data.picture || ""}
-                        alt={data.data.name}
-                        className="object-cover"
-                      />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xl">
-                        {getUserInitial(data.data.name)}
-                      </AvatarFallback>
-                    </Avatar> */}
-
                     <Avatar className="h-12 w-12">
                       {data?.data?.picture ? (
                         <AvatarImage
@@ -338,7 +271,7 @@ export default function Navbar() {
                         />
                       ) : null}
                       <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xl">
-                        {getUserInitial(data?.data?.name || "U")}
+                        {getUserInitial(data?.data?.name)}
                       </AvatarFallback>
                     </Avatar>
 

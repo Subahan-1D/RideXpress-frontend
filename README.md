@@ -1,21 +1,5 @@
 # 🚗 RideExpress Frontend
 
-<div align="center">
-
-![RideExpress Logo](https://img.shields.io/badge/RideExpress-Frontend-orange?style=for-the-badge&logo=react)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Site-green?style=for-the-badge&logo=vercel)](https://ride-express.vercel.app)
-
-**A modern, secure ride-sharing platform for companies and universities**
-
-[![React](https://img.shields.io/badge/React-19.1.1-blue?style=flat-square&logo=react)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-7.1.2-purple?style=flat-square&logo=vite)](https://vitejs.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.1.11-cyan?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
-
-</div>
-
----
-
 ## 📋 Table of Contents
 
 - [🚀 Live Demo](#-live-demo)
@@ -38,7 +22,7 @@
 
 ## 🚀 Live Demo
 
-**🌐 [Visit Live Application](https://ride-express.vercel.app)**
+**🌐 [Visit Live Application]()**
 
 Experience the full ride-sharing platform with real-time features, secure authentication, and responsive design.
 

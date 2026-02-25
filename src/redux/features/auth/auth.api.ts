@@ -12,22 +12,26 @@ import type {
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    register: builder.mutation<IResponse<IUser>, IRegister>({
+    register: builder.mutation<
+      IResponse<{ user: IUser; accessToken: string; refreshToken?: string }>, 
+      IRegister
+    >({
       query: (userInfo) => ({
         url: "/user/register",
         method: "POST",
         data: userInfo,
       }),
-      invalidatesTags: ["USER"],
     }),
 
-    login: builder.mutation<IResponse<IUser>, ILogin>({
+    login: builder.mutation<
+      IResponse<{ user: IUser; accessToken: string; refreshToken?: string }>, 
+      ILogin
+    >({
       query: (userInfo) => ({
         url: "/auth/login",
         method: "POST",
         data: userInfo,
       }),
-      invalidatesTags: ["USER"],
     }),
 
     logout: builder.mutation({
@@ -70,29 +74,6 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ["USER"],
     }),
 
-    // getAllUsers: builder.query<
-    //   { data: IUser[]; meta: { page: number; limit: number; total: number } },
-    //   {
-    //     search?: string;
-    //     role?: string;
-    //     isActive?: string;
-    //     sortBy?: string;
-    //     sortOrder?: "asc" | "desc";
-    //     page?: number;
-    //     limit?: number;
-    //   }
-    // >({
-    //   query: (params) => ({
-    //     url: "/user/all-users",
-    //     method: "GET",
-    //     params, // axiosBaseQuery will send these as querystring
-    //   }),
-    //   transformResponse: (response: IResponseWithMeta<IUser[]>) => {
-    //     return { data: response.data, meta: response.meta };
-    //   },
-    //   providesTags: ["USER"],
-    // }),
-
     updateUser: builder.mutation<
       IResponse<IUser>,
       { userId: string; payload: Partial<IUser> }
@@ -125,7 +106,7 @@ export const authApi = baseApi.injectEndpoints({
 
     setPassword: builder.mutation<IResponse<unknown>, ISetPassword>({
       query: (userInfo) => ({
-        url: "/auth/set-password", // google login user later can set his password with this api
+        url: "/auth/set-password", 
         method: "POST",
         data: userInfo,
       }),

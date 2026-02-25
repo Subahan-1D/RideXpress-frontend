@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/modules/Authentication/RegisterForm.tsx
 import { cn } from "@/lib/utils";
@@ -7,7 +8,6 @@ import { Link, useNavigate } from "react-router";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,15 +25,11 @@ import {
 } from "@/redux/features/auth/auth.api";
 import { FcGoogle } from "react-icons/fc";
 import config from "@/config";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Car, User } from "lucide-react";
+
+import { useDispatch } from "react-redux";
+import { setCredentials } from "@/redux/features/authSlice";
 
 const registerSchema = z
   .object({
@@ -50,7 +46,7 @@ const registerSchema = z
 
 const roleRedirectMap: Record<"RIDER" | "DRIVER", string> = {
   RIDER: "/rider/request-ride",
-  DRIVER: "/rider/driver-request",
+  DRIVER: "/rider/driver-request", 
 };
 
 export function RegisterForm({
@@ -61,6 +57,8 @@ export function RegisterForm({
   const [login] = useLoginMutation();
   const [triggerUserInfo] = useLazyUserInfoQuery();
   const navigate = useNavigate();
+  
+  const dispatch = useDispatch();
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -78,25 +76,39 @@ export function RegisterForm({
       name: data.name,
       email: data.email,
       password: data.password,
+      role: data.role, 
     };
 
     try {
+ 
       await register(userInfo).unwrap();
       toast.success("User created successfully");
 
-      await login({ email: data.email, password: data.password }).unwrap();
+    
+      const res = await login({ email: data.email, password: data.password }).unwrap();
 
-      // Ensure auth cookie/session is recognized before navigating
+      if (res.success && res.data) {
+        dispatch(
+          setCredentials({
+            user: res.data.user,
+            accessToken: res.data.accessToken || "",
+          })
+        );
+      }
+
+ 
       try {
         await triggerUserInfo(undefined).unwrap();
       } catch (_) {
-        // ignore; navigate anyway — withAuth will handle if truly unauthenticated
+        // ignore
       }
 
+   
       const redirectTo = roleRedirectMap[data.role] ?? "/";
       navigate(redirectTo, { replace: true });
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      toast.error(error?.data?.message || "Registration failed. Please try again.");
     }
   };
 
@@ -164,9 +176,6 @@ export function RegisterForm({
                   <FormControl>
                     <Input placeholder="John Doe" {...field} />
                   </FormControl>
-                  <FormDescription className="sr-only">
-                    This is your public display name.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -185,38 +194,10 @@ export function RegisterForm({
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription className="sr-only">
-                    This is your public display name.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            {/* <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Select Role (for redirect only)</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="RIDER">Rider</SelectItem>
-                      <SelectItem value="DRIVER">Driver</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
 
             <FormField
               control={form.control}
@@ -227,9 +208,6 @@ export function RegisterForm({
                   <FormControl>
                     <Password {...field} />
                   </FormControl>
-                  <FormDescription className="sr-only">
-                    This is your public display name.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -244,9 +222,6 @@ export function RegisterForm({
                   <FormControl>
                     <Password {...field} />
                   </FormControl>
-                  <FormDescription className="sr-only">
-                    This is your public display name.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
