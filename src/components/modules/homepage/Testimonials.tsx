@@ -3,25 +3,25 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const testimonials = [
   {
-    name: "Aisha Rahman",
+    name: "Subahan Islam",
     role: "University Student",
     content:
       "Booking a ride to campus is effortless. Safety features and verified drivers give me peace of mind.",
-    initials: "AR",
+    initials: "SI",
   },
   {
-    name: "Tanvir Ahmed",
+    name: "Pranto Ahamed",
     role: "Software Engineer",
     content:
       "I save time and money on daily commutes. The experience feels polished and reliable.",
-    initials: "TA",
+    initials: "PA",
   },
   {
-    name: "Nusrat Jahan",
+    name: "Tandra Jahan",
     role: "Operations Manager",
     content:
       "Our team uses it for office transport—transparent pricing, punctual drivers, and great support.",
-    initials: "NJ",
+    initials: "TJ",
   },
 ];
 
