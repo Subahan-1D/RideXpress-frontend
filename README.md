@@ -22,7 +22,7 @@
 
 ## 🚀 Live Demo
 
-**🌐 [Visit Live Application]()**
+**🌐 [Visit Live Application](https://ride-xpress-frontend.vercel.app)**
 
 Experience the full ride-sharing platform with real-time features, secure authentication, and responsive design.
 
@@ -417,7 +417,7 @@ VITE_API_BASE_URL=
 VITE_GOOGLE_CLIENT_ID=your_production_client_id
 
 # Development
-VITE_API_BASE_URL=http://localhost:5000
+VITE_API_BASE_URL=http://localhost:8000
 VITE_GOOGLE_CLIENT_ID=your_dev_client_id
 ```
 
