@@ -23,7 +23,9 @@ axiosInstance.interceptors.request.use(
   function (config) {
     if (store) {
       const state = store.getState() as RootState;
+      console.log("masud vai token paice" , state)
       const token = state.auth?.accessToken;
+     console.log("pranto vai pai nai" , token)
       
       console.log("Redux Token:", token ? "Found!" : "Missing!");
 
